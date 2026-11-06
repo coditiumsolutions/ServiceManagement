@@ -1,0 +1,51 @@
+# =====================================================================
+# Service Management System - Apache configuration (XAMPP)
+# =====================================================================
+
+DirectoryIndex index.php
+Options -Indexes
+
+# ---------------------------------------------------------------------
+# Block web access to internal folders and sensitive files.
+# (config/, includes/ and sql/ also contain their own "deny all" .htaccess.)
+# ---------------------------------------------------------------------
+<IfModule mod_alias.c>
+    RedirectMatch 403 ^/(.*/)?(config|includes|sql)(/.*)?$
+    RedirectMatch 403 ^/(.*/)?auth/create_admin\.php$
+</IfModule>
+
+<FilesMatch "^(create_admin\.php|.*\.sql|.*\.log|\.env.*|composer\.(json|lock))$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Hide dot-files such as .git or .env (except .well-known)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+</IfModule>
+
+# ---------------------------------------------------------------------
+# Security headers (also sent by PHP for every page)
+# ---------------------------------------------------------------------
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "DENY"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    Header unset X-Powered-By
+</IfModule>
+
+# ---------------------------------------------------------------------
+# PHP settings (only applied when PHP runs as an Apache module, as in XAMPP)
+# ---------------------------------------------------------------------
+<IfModule mod_php.c>
+    php_flag display_errors Off
+    php_flag session.cookie_httponly On
+    php_flag session.use_strict_mode On
+</IfModule>

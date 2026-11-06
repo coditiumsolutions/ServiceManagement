@@ -1,0 +1,26 @@
+# Secrets and local config
+.env
+.env.*
+!.env.example
+*.local.json
+**/secrets.json
+**/credentials.json
+config/deploy_env.php
+
+# Deploy / ops scratch (keys, cookies, Plesk probes, staging copies)
+ssh/
+_deploy_stage/
+*.zip
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs and temp
+*.log
+*.tmp
+web_cookies.txt
+plesk_cookies.txt*
