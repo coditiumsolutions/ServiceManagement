@@ -28,7 +28,7 @@ define('APP_NAME', getenv('APP_NAME') ?: 'Services Management');
 define('APP_SHORT_NAME', getenv('APP_SHORT_NAME') ?: 'Services');
 
 /** Application version for cache-busting assets. */
-define('APP_VERSION', '0.5.17');
+define('APP_VERSION', '0.5.19');
 
 /**
  * Debug mode. Keep FALSE in production: errors are logged, never displayed.
