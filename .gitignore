@@ -6,6 +6,7 @@
 **/secrets.json
 **/credentials.json
 config/deploy_env.php
+dblogin.txt
 
 # Deploy / ops scratch (keys, cookies, Plesk probes, staging copies)
 ssh/

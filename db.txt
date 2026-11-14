@@ -1,0 +1,402 @@
+# Version: 1.0 | UpdatedAt: 14/11/2026
+# Database documentation for Services Management (servicemgmt)
+# Source: live MySQL schema introspection
+# Note: credentials are NOT stored in this file — see dblogin.txt (local only)
+
+Database: servicemgmt
+Engine: MySQL
+Tables: 15
+
+========================================================================
+TABLE: admin_users
+------------------------------------------------------------------------
+COLUMN                       TYPE                   NULL     KEY    DEFAULT      EXTRA
+------------------------------------------------------------------------
+uid                          int(11)                NO       PRI    -            auto_increment
+full_name                    varchar(150)           NO       -      -            -
+username                     varchar(50)            NO       UNI    -            -
+password_hash                varchar(255)           NO       -      -            -
+email                        varchar(150)           YES      MUL    NULL         -
+role                         varchar(30)            NO       MUL    'admin'      -
+is_active                    tinyint(1)             NO       MUL    1            -
+created_at                   datetime               NO       -      current_timestamp() -
+updated_at                   datetime               NO       -      current_timestamp() on update current_timestamp()
+
+========================================================================
+TABLE: customerpayments
+------------------------------------------------------------------------
+COLUMN                       TYPE                   NULL     KEY    DEFAULT      EXTRA
+------------------------------------------------------------------------
+uid                          int(11)                NO       PRI    -            auto_increment
+ReceiptNo                    varchar(30)            NO       UNI    -            -
+CustomerId                   int(11)                NO       MUL    -            -
+ServiceRequestId             int(11)                YES      MUL    NULL         -
+PaymentDateTime              datetime               NO       MUL    current_timestamp() -
+Amount                       decimal(18,2)          NO       -      -            -
+PaymentType                  enum('Advance','Partial','Full','Refund') NO       MUL    'Full'       -
+PaymentMethod                enum('Cash','BankTransfer','Cheque','Card','MobileWallet','Other') NO       -      'Cash'       -
+ReferenceNo                  varchar(100)           YES      -      NULL         -
+Remarks                      varchar(500)           YES      -      NULL         -
+created_at                   datetime               NO       -      current_timestamp() -
+updated_at                   datetime               NO       -      current_timestamp() on update current_timestamp()
+
+========================================================================
+TABLE: customers
+------------------------------------------------------------------------
+COLUMN                       TYPE                   NULL     KEY    DEFAULT      EXTRA
+------------------------------------------------------------------------
+uid                          int(11)                NO       PRI    -            auto_increment
+CustomerCode                 varchar(20)            NO       UNI    -            -
+FullName                     varchar(150)           NO       MUL    -            -
+MobileNo                     varchar(20)            NO       MUL    -            -
+AlternateMobileNo            varchar(20)            YES      -      NULL         -
+Email                        varchar(150)           YES      -      NULL         -
+CNIC                         varchar(20)            YES      -      NULL         -
+Address                      varchar(500)           YES      -      NULL         -
+Area                         varchar(100)           YES      -      NULL         -
+City                         varchar(100)           YES      MUL    NULL         -
+Notes                        varchar(1000)          YES      -      NULL         -
+IsActive                     tinyint(1)             NO       MUL    1            -
+created_at                   datetime               NO       -      current_timestamp() -
+updated_at                   datetime               NO       -      current_timestamp() on update current_timestamp()
+
+========================================================================
+TABLE: expenses
+------------------------------------------------------------------------
+COLUMN                       TYPE                   NULL     KEY    DEFAULT      EXTRA
+------------------------------------------------------------------------
+uid                          int(11)                NO       PRI    -            auto_increment
+ExpenseNo                    varchar(30)            NO       UNI    -            -
+ExpenseDate                  date                   NO       MUL    -            -
+ExpenseCategory              varchar(100)           NO       MUL    -            -
+Description                  varchar(500)           YES      -      NULL         -
+Amount                       decimal(18,2)          NO       -      -            -
+PaidTo                       varchar(150)           YES      -      NULL         -
+PaymentMethod                enum('Cash','BankTransfer','Cheque','Card','MobileWallet','Other') NO       -      'Cash'       -
+ReferenceNo                  varchar(100)           YES      -      NULL         -
+ServiceRequestId             int(11)                YES      MUL    NULL         -
+ProfessionalId               int(11)                YES      MUL    NULL         -
+Remarks                      varchar(500)           YES      -      NULL         -
+created_at                   datetime               NO       -      current_timestamp() -
+updated_at                   datetime               NO       -      current_timestamp() on update current_timestamp()
+
+========================================================================
+TABLE: professionalcommissionpayments
+------------------------------------------------------------------------
+COLUMN                       TYPE                   NULL     KEY    DEFAULT      EXTRA
+------------------------------------------------------------------------
+uid                          int(11)                NO       PRI    -            auto_increment
+PaymentNo                    varchar(30)            NO       UNI    -            -
+CommissionId                 int(11)                NO       MUL    -            -
+ProfessionalId               int(11)                NO       MUL    -            -
+PayrollId                    int(11)                YES      MUL    NULL         -
+PaymentDateTime              datetime               NO       MUL    current_timestamp() -
+Amount                       decimal(18,2)          NO       -      -            -
+PaymentMethod                enum('Cash','BankTransfer','Cheque','MobileWallet','Payroll','Other') NO       -      'Cash'       -
+ReferenceNo                  varchar(100)           YES      -      NULL         -
+Remarks                      varchar(500)           YES      -      NULL         -
+created_at                   datetime               NO       -      current_timestamp() -
+updated_at                   datetime               NO       -      current_timestamp() on update current_timestamp()
+
+========================================================================
+TABLE: professionalcommissionrates
+------------------------------------------------------------------------
+COLUMN                       TYPE                   NULL     KEY    DEFAULT      EXTRA
+------------------------------------------------------------------------
+uid                          int(11)                NO       PRI    -            auto_increment
+ProfessionalId               int(11)                NO       MUL    -            -
+ServiceTypeId                int(11)                YES      MUL    NULL         -
+CommissionType               enum('Percentage','Fixed') NO       -      'Percentage' -
+CommissionValue              decimal(18,2)          NO       -      -            -
+EffectiveFrom                date                   NO       -      -            -
+EffectiveTo                  date                   YES      -      NULL         -
+IsActive                     tinyint(1)             NO       -      1            -
+created_at                   datetime               NO       -      current_timestamp() -
+updated_at                   datetime               NO       -      current_timestamp() on update current_timestamp()
+
+========================================================================
+TABLE: professionalcommissions
+------------------------------------------------------------------------
+COLUMN                       TYPE                   NULL     KEY    DEFAULT      EXTRA
+------------------------------------------------------------------------
+uid                          int(11)                NO       PRI    -            auto_increment
+AssignmentId                 int(11)                NO       UNI    -            -
+ProfessionalId               int(11)                NO       MUL    -            -
+ServiceRequestId             int(11)                NO       MUL    -            -
+ServiceAmount                decimal(18,2)          NO       -      0.00         -
+CommissionType               enum('Percentage','Fixed') NO       -      -            -
+CommissionRate               decimal(18,2)          NO       -      0.00         -
+CommissionAmount             decimal(18,2)          NO       -      0.00         -
+PaidAmount                   decimal(18,2)          NO       -      0.00         -
+CommissionDate               date                   NO       -      -            -
+CommissionStatus             enum('Pending','Approved','PartiallyPaid','Paid','Cancelled') NO       MUL    'Pending'    -
+Remarks                      varchar(500)           YES      -      NULL         -
+created_at                   datetime               NO       -      current_timestamp() -
+updated_at                   datetime               NO       -      current_timestamp() on update current_timestamp()
+
+========================================================================
+TABLE: professionalpayroll
+------------------------------------------------------------------------
+COLUMN                       TYPE                   NULL     KEY    DEFAULT      EXTRA
+------------------------------------------------------------------------
+uid                          int(11)                NO       PRI    -            auto_increment
+PayrollNo                    varchar(30)            NO       UNI    -            -
+ProfessionalId               int(11)                NO       MUL    -            -
+SalaryHistoryId              int(11)                YES      MUL    NULL         -
+PayrollMonth                 date                   NO       MUL    -            -
+PeriodStart                  date                   NO       -      -            -
+PeriodEnd                    date                   NO       -      -            -
+BasicSalary                  decimal(18,2)          NO       -      0.00         -
+Allowances                   decimal(18,2)          NO       -      0.00         -
+CommissionAmount             decimal(18,2)          NO       -      0.00         -
+Bonus                        decimal(18,2)          NO       -      0.00         -
+Deductions                   decimal(18,2)          NO       -      0.00         -
+NetPayable                   decimal(18,2)          NO       -      0.00         -
+PaidAmount                   decimal(18,2)          NO       -      0.00         -
+BalanceAmount                decimal(18,2)          NO       -      0.00         -
+PayrollStatus                enum('Draft','Approved','PartiallyPaid','Paid','Cancelled') NO       MUL    'Draft'      -
+Remarks                      varchar(500)           YES      -      NULL         -
+created_at                   datetime               NO       -      current_timestamp() -
+updated_at                   datetime               NO       -      current_timestamp() on update current_timestamp()
+
+========================================================================
+TABLE: professionalsalaryhistory
+------------------------------------------------------------------------
+COLUMN                       TYPE                   NULL     KEY    DEFAULT      EXTRA
+------------------------------------------------------------------------
+uid                          int(11)                NO       PRI    -            auto_increment
+ProfessionalId               int(11)                NO       MUL    -            -
+BasicSalary                  decimal(18,2)          NO       -      -            -
+Allowances                   decimal(18,2)          NO       -      0.00         -
+EffectiveFrom                date                   NO       -      -            -
+EffectiveTo                  date                   YES      -      NULL         -
+RevisionReason               varchar(500)           YES      -      NULL         -
+created_at                   datetime               NO       -      current_timestamp() -
+updated_at                   datetime               NO       -      current_timestamp() on update current_timestamp()
+
+========================================================================
+TABLE: professionalsalarypayments
+------------------------------------------------------------------------
+COLUMN                       TYPE                   NULL     KEY    DEFAULT      EXTRA
+------------------------------------------------------------------------
+uid                          int(11)                NO       PRI    -            auto_increment
+PaymentNo                    varchar(30)            NO       UNI    -            -
+PayrollId                    int(11)                NO       MUL    -            -
+ProfessionalId               int(11)                NO       MUL    -            -
+PaymentDateTime              datetime               NO       MUL    current_timestamp() -
+Amount                       decimal(18,2)          NO       -      -            -
+PaymentMethod                enum('Cash','BankTransfer','Cheque','MobileWallet','Other') NO       -      'Cash'       -
+ReferenceNo                  varchar(100)           YES      -      NULL         -
+Remarks                      varchar(500)           YES      -      NULL         -
+created_at                   datetime               NO       -      current_timestamp() -
+updated_at                   datetime               NO       -      current_timestamp() on update current_timestamp()
+
+========================================================================
+TABLE: serviceassignments
+------------------------------------------------------------------------
+COLUMN                       TYPE                   NULL     KEY    DEFAULT      EXTRA
+------------------------------------------------------------------------
+uid                          int(11)                NO       PRI    -            auto_increment
+ServiceRequestId             int(11)                NO       MUL    -            -
+ProfessionalId               int(11)                NO       MUL    -            -
+AssignedDateTime             datetime               NO       MUL    current_timestamp() -
+ServiceStartDateTime         datetime               YES      -      NULL         -
+CompletionDateTime           datetime               YES      -      NULL         -
+AgreedCommission             decimal(18,2)          NO       -      0.00         -
+CommissionType               enum('Percentage','Fixed') NO       -      'Percentage' -
+AssignmentStatus             enum('Assigned','Accepted','InProgress','Completed','Cancelled','Reassigned') NO       MUL    'Assigned'   -
+Remarks                      varchar(1000)          YES      -      NULL         -
+created_at                   datetime               NO       -      current_timestamp() -
+updated_at                   datetime               NO       -      current_timestamp() on update current_timestamp()
+
+========================================================================
+TABLE: servicecategories
+------------------------------------------------------------------------
+COLUMN                       TYPE                   NULL     KEY    DEFAULT      EXTRA
+------------------------------------------------------------------------
+uid                          int(11)                NO       PRI    -            auto_increment
+CategoryName                 varchar(100)           NO       UNI    -            -
+Description                  varchar(500)           YES      -      NULL         -
+IsActive                     tinyint(1)             NO       MUL    1            -
+created_at                   datetime               NO       -      current_timestamp() -
+updated_at                   datetime               NO       -      current_timestamp() on update current_timestamp()
+
+========================================================================
+TABLE: serviceprofessionals
+------------------------------------------------------------------------
+COLUMN                       TYPE                   NULL     KEY    DEFAULT      EXTRA
+------------------------------------------------------------------------
+uid                          int(11)                NO       PRI    -            auto_increment
+ProfessionalCode             varchar(20)            NO       UNI    -            -
+FullName                     varchar(150)           NO       MUL    -            -
+MobileNo                     varchar(20)            NO       MUL    -            -
+AlternateMobileNo            varchar(20)            YES      -      NULL         -
+Email                        varchar(150)           YES      -      NULL         -
+CNIC                         varchar(20)            YES      -      NULL         -
+Address                      varchar(500)           YES      -      NULL         -
+City                         varchar(100)           YES      -      NULL         -
+PrimaryCategoryId            int(11)                YES      MUL    NULL         -
+EmploymentType               enum('Salaried','Commission','SalaryPlusCommission') NO       -      'SalaryPlusCommission' -
+JoiningDate                  date                   NO       -      -            -
+LeavingDate                  date                   YES      -      NULL         -
+BankName                     varchar(100)           YES      -      NULL         -
+BankAccountNo                varchar(50)            YES      -      NULL         -
+IsActive                     tinyint(1)             NO       MUL    1            -
+created_at                   datetime               NO       -      current_timestamp() -
+updated_at                   datetime               NO       -      current_timestamp() on update current_timestamp()
+
+========================================================================
+TABLE: servicerequests
+------------------------------------------------------------------------
+COLUMN                       TYPE                   NULL     KEY    DEFAULT      EXTRA
+------------------------------------------------------------------------
+uid                          int(11)                NO       PRI    -            auto_increment
+RequestNo                    varchar(30)            NO       UNI    -            -
+CustomerId                   int(11)                NO       MUL    -            -
+ServiceTypeId                int(11)                NO       MUL    -            -
+RequestDateTime              datetime               NO       MUL    current_timestamp() -
+PreferredDate                date                   YES      MUL    NULL         -
+PreferredTimeSlot            varchar(50)            YES      -      NULL         -
+ServiceAddress               varchar(500)           NO       -      -            -
+ProblemDescription           varchar(2000)          YES      -      NULL         -
+Priority                     enum('Low','Normal','High','Urgent') NO       -      'Normal'     -
+EstimatedAmount              decimal(18,2)          NO       -      0.00         -
+DiscountAmount               decimal(18,2)          NO       -      0.00         -
+FinalAmount                  decimal(18,2)          NO       -      0.00         -
+RequestStatus                enum('Pending','Assigned','InProgress','Completed','Cancelled') NO       MUL    'Pending'    -
+CompletedDateTime            datetime               YES      -      NULL         -
+CancelledDateTime            datetime               YES      -      NULL         -
+CancellationReason           varchar(500)           YES      -      NULL         -
+Remarks                      varchar(1000)          YES      -      NULL         -
+created_at                   datetime               NO       -      current_timestamp() -
+updated_at                   datetime               NO       -      current_timestamp() on update current_timestamp()
+
+========================================================================
+TABLE: servicetypes
+------------------------------------------------------------------------
+COLUMN                       TYPE                   NULL     KEY    DEFAULT      EXTRA
+------------------------------------------------------------------------
+uid                          int(11)                NO       PRI    -            auto_increment
+CategoryId                   int(11)                NO       MUL    -            -
+ServiceName                  varchar(150)           NO       MUL    -            -
+Description                  varchar(500)           YES      -      NULL         -
+BasePrice                    decimal(18,2)          NO       -      0.00         -
+EstimatedDurationMinutes     int(11)                YES      -      NULL         -
+IsActive                     tinyint(1)             NO       MUL    1            -
+created_at                   datetime               NO       -      current_timestamp() -
+updated_at                   datetime               NO       -      current_timestamp() on update current_timestamp()
+
+========================================================================
+FOREIGN KEYS
+------------------------------------------------------------------------
+customerpayments.CustomerId -> customers.uid  [FK_CustomerPayments_Customer]
+customerpayments.ServiceRequestId -> servicerequests.uid  [FK_CustomerPayments_Request]
+expenses.ProfessionalId -> serviceprofessionals.uid  [FK_Expenses_Professional]
+expenses.ServiceRequestId -> servicerequests.uid  [FK_Expenses_Request]
+professionalcommissionpayments.CommissionId -> professionalcommissions.uid  [FK_ProfessionalCommissionPayments_Commission]
+professionalcommissionpayments.PayrollId -> professionalpayroll.uid  [FK_ProfessionalCommissionPayments_Payroll]
+professionalcommissionpayments.ProfessionalId -> serviceprofessionals.uid  [FK_ProfessionalCommissionPayments_Professional]
+professionalcommissionrates.ProfessionalId -> serviceprofessionals.uid  [FK_ProfessionalCommissionRates_Professional]
+professionalcommissionrates.ServiceTypeId -> servicetypes.uid  [FK_ProfessionalCommissionRates_ServiceType]
+professionalcommissions.AssignmentId -> serviceassignments.uid  [FK_ProfessionalCommissions_Assignment]
+professionalcommissions.ProfessionalId -> serviceprofessionals.uid  [FK_ProfessionalCommissions_Professional]
+professionalcommissions.ServiceRequestId -> servicerequests.uid  [FK_ProfessionalCommissions_Request]
+professionalpayroll.ProfessionalId -> serviceprofessionals.uid  [FK_ProfessionalPayroll_Professional]
+professionalpayroll.SalaryHistoryId -> professionalsalaryhistory.uid  [FK_ProfessionalPayroll_SalaryHistory]
+professionalsalaryhistory.ProfessionalId -> serviceprofessionals.uid  [FK_ProfessionalSalaryHistory_Professional]
+professionalsalarypayments.PayrollId -> professionalpayroll.uid  [FK_ProfessionalSalaryPayments_Payroll]
+professionalsalarypayments.ProfessionalId -> serviceprofessionals.uid  [FK_ProfessionalSalaryPayments_Professional]
+serviceassignments.ProfessionalId -> serviceprofessionals.uid  [FK_ServiceAssignments_Professional]
+serviceassignments.ServiceRequestId -> servicerequests.uid  [FK_ServiceAssignments_Request]
+serviceprofessionals.PrimaryCategoryId -> servicecategories.uid  [FK_ServiceProfessionals_PrimaryCategory]
+servicerequests.CustomerId -> customers.uid  [FK_ServiceRequests_Customer]
+servicerequests.ServiceTypeId -> servicetypes.uid  [FK_ServiceRequests_ServiceType]
+servicetypes.CategoryId -> servicecategories.uid  [FK_ServiceTypes_Category]
+
+========================================================================
+INDEXES
+------------------------------------------------------------------------
+admin_users | IX_admin_users_email | INDEX | (email)
+admin_users | IX_admin_users_is_active | INDEX | (is_active)
+admin_users | IX_admin_users_role | INDEX | (role)
+admin_users | PRIMARY | UNIQUE | (uid)
+admin_users | UQ_admin_users_username | UNIQUE | (username)
+customerpayments | IX_CustomerPayments_CustomerId | INDEX | (CustomerId)
+customerpayments | IX_CustomerPayments_PaymentDateTime | INDEX | (PaymentDateTime)
+customerpayments | IX_CustomerPayments_PaymentType | INDEX | (PaymentType)
+customerpayments | IX_CustomerPayments_ServiceRequestId | INDEX | (ServiceRequestId)
+customerpayments | PRIMARY | UNIQUE | (uid)
+customerpayments | UQ_CustomerPayments_ReceiptNo | UNIQUE | (ReceiptNo)
+customers | IX_Customers_City_Area | INDEX | (City,Area)
+customers | IX_Customers_FullName | INDEX | (FullName)
+customers | IX_Customers_IsActive | INDEX | (IsActive)
+customers | IX_Customers_MobileNo | INDEX | (MobileNo)
+customers | PRIMARY | UNIQUE | (uid)
+customers | UQ_Customers_CustomerCode | UNIQUE | (CustomerCode)
+expenses | IX_Expenses_ExpenseCategory | INDEX | (ExpenseCategory)
+expenses | IX_Expenses_ExpenseDate | INDEX | (ExpenseDate)
+expenses | IX_Expenses_ProfessionalId | INDEX | (ProfessionalId)
+expenses | IX_Expenses_ServiceRequestId | INDEX | (ServiceRequestId)
+expenses | PRIMARY | UNIQUE | (uid)
+expenses | UQ_Expenses_ExpenseNo | UNIQUE | (ExpenseNo)
+professionalcommissionpayments | IX_ProfessionalCommissionPayments_CommissionId | INDEX | (CommissionId)
+professionalcommissionpayments | IX_ProfessionalCommissionPayments_PaymentDateTime | INDEX | (PaymentDateTime)
+professionalcommissionpayments | IX_ProfessionalCommissionPayments_PayrollId | INDEX | (PayrollId)
+professionalcommissionpayments | IX_ProfessionalCommissionPayments_ProfessionalId | INDEX | (ProfessionalId)
+professionalcommissionpayments | PRIMARY | UNIQUE | (uid)
+professionalcommissionpayments | UQ_ProfessionalCommissionPayments_PaymentNo | UNIQUE | (PaymentNo)
+professionalcommissionrates | IX_ProfessionalCommissionRates_Lookup | INDEX | (ProfessionalId,ServiceTypeId,EffectiveFrom,EffectiveTo)
+professionalcommissionrates | IX_ProfessionalCommissionRates_ProfessionalId | INDEX | (ProfessionalId)
+professionalcommissionrates | IX_ProfessionalCommissionRates_ServiceTypeId | INDEX | (ServiceTypeId)
+professionalcommissionrates | PRIMARY | UNIQUE | (uid)
+professionalcommissions | IX_ProfessionalCommissions_ProfessionalId | INDEX | (ProfessionalId)
+professionalcommissions | IX_ProfessionalCommissions_Prof_Date | INDEX | (ProfessionalId,CommissionDate)
+professionalcommissions | IX_ProfessionalCommissions_ServiceRequestId | INDEX | (ServiceRequestId)
+professionalcommissions | IX_ProfessionalCommissions_Status | INDEX | (CommissionStatus)
+professionalcommissions | PRIMARY | UNIQUE | (uid)
+professionalcommissions | UQ_ProfessionalCommissions_AssignmentId | UNIQUE | (AssignmentId)
+professionalpayroll | IX_ProfessionalPayroll_PayrollMonth | INDEX | (PayrollMonth)
+professionalpayroll | IX_ProfessionalPayroll_ProfessionalId | INDEX | (ProfessionalId)
+professionalpayroll | IX_ProfessionalPayroll_SalaryHistoryId | INDEX | (SalaryHistoryId)
+professionalpayroll | IX_ProfessionalPayroll_Status | INDEX | (PayrollStatus)
+professionalpayroll | PRIMARY | UNIQUE | (uid)
+professionalpayroll | UQ_ProfessionalPayroll_PayrollNo | UNIQUE | (PayrollNo)
+professionalpayroll | UQ_ProfessionalPayroll_Prof_Month | UNIQUE | (ProfessionalId,PayrollMonth)
+professionalsalaryhistory | IX_ProfessionalSalaryHistory_Effective | INDEX | (ProfessionalId,EffectiveFrom,EffectiveTo)
+professionalsalaryhistory | IX_ProfessionalSalaryHistory_ProfessionalId | INDEX | (ProfessionalId)
+professionalsalaryhistory | PRIMARY | UNIQUE | (uid)
+professionalsalaryhistory | UQ_ProfessionalSalaryHistory_Prof_From | UNIQUE | (ProfessionalId,EffectiveFrom)
+professionalsalarypayments | IX_ProfessionalSalaryPayments_PaymentDateTime | INDEX | (PaymentDateTime)
+professionalsalarypayments | IX_ProfessionalSalaryPayments_PayrollId | INDEX | (PayrollId)
+professionalsalarypayments | IX_ProfessionalSalaryPayments_ProfessionalId | INDEX | (ProfessionalId)
+professionalsalarypayments | PRIMARY | UNIQUE | (uid)
+professionalsalarypayments | UQ_ProfessionalSalaryPayments_PaymentNo | UNIQUE | (PaymentNo)
+serviceassignments | IX_ServiceAssignments_AssignedDateTime | INDEX | (AssignedDateTime)
+serviceassignments | IX_ServiceAssignments_AssignmentStatus | INDEX | (AssignmentStatus)
+serviceassignments | IX_ServiceAssignments_ProfessionalId | INDEX | (ProfessionalId)
+serviceassignments | IX_ServiceAssignments_Professional_Status | INDEX | (ProfessionalId,AssignmentStatus)
+serviceassignments | IX_ServiceAssignments_ServiceRequestId | INDEX | (ServiceRequestId)
+serviceassignments | PRIMARY | UNIQUE | (uid)
+servicecategories | IX_ServiceCategories_IsActive | INDEX | (IsActive)
+servicecategories | PRIMARY | UNIQUE | (uid)
+servicecategories | UQ_ServiceCategories_CategoryName | UNIQUE | (CategoryName)
+serviceprofessionals | IX_ServiceProfessionals_FullName | INDEX | (FullName)
+serviceprofessionals | IX_ServiceProfessionals_IsActive | INDEX | (IsActive)
+serviceprofessionals | IX_ServiceProfessionals_MobileNo | INDEX | (MobileNo)
+serviceprofessionals | IX_ServiceProfessionals_PrimaryCategoryId | INDEX | (PrimaryCategoryId)
+serviceprofessionals | PRIMARY | UNIQUE | (uid)
+serviceprofessionals | UQ_ServiceProfessionals_Code | UNIQUE | (ProfessionalCode)
+servicerequests | IX_ServiceRequests_CustomerId | INDEX | (CustomerId)
+servicerequests | IX_ServiceRequests_PreferredDate | INDEX | (PreferredDate)
+servicerequests | IX_ServiceRequests_RequestDateTime | INDEX | (RequestDateTime)
+servicerequests | IX_ServiceRequests_RequestStatus | INDEX | (RequestStatus)
+servicerequests | IX_ServiceRequests_ServiceTypeId | INDEX | (ServiceTypeId)
+servicerequests | IX_ServiceRequests_Status_Date | INDEX | (RequestStatus,RequestDateTime)
+servicerequests | PRIMARY | UNIQUE | (uid)
+servicerequests | UQ_ServiceRequests_RequestNo | UNIQUE | (RequestNo)
+servicetypes | IX_ServiceTypes_CategoryId | INDEX | (CategoryId)
+servicetypes | IX_ServiceTypes_IsActive | INDEX | (IsActive)
+servicetypes | IX_ServiceTypes_ServiceName | INDEX | (ServiceName)
+servicetypes | PRIMARY | UNIQUE | (uid)
+servicetypes | UQ_ServiceTypes_Category_Name | UNIQUE | (CategoryId,ServiceName)
+

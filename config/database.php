@@ -15,11 +15,20 @@ if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
 
 /**
  * Read a database setting from the environment, falling back to a default.
+ *
+ * Checks putenv/getenv, then $_ENV / $_SERVER. Some Windows/IIS PHP builds
+ * do not propagate putenv() into getenv(), so deploy_env.php sets all three.
  */
 function db_setting(string $name, string $default): string
 {
     $value = getenv($name);
-    return ($value === false) ? $default : $value;
+    if ($value === false && array_key_exists($name, $_ENV)) {
+        $value = $_ENV[$name];
+    }
+    if ($value === false && array_key_exists($name, $_SERVER)) {
+        $value = $_SERVER[$name];
+    }
+    return ($value === false) ? $default : (string) $value;
 }
 
 define('DB_HOST', db_setting('DB_HOST', '127.0.0.1'));
