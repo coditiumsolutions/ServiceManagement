@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/service_ops.php';
+require_once __DIR__ . '/../../includes/payment_ops.php';
 require_login();
 
 $pdo = db();
@@ -100,6 +101,19 @@ try {
     error_log('[ServiceManagement] request assignments failed: ' . $exception->getMessage());
 }
 
+$payments = [];
+$paymentSummary = [
+    'final_amount' => (float) $request['FinalAmount'],
+    'paid_amount'  => 0.0,
+    'balance'      => (float) $request['FinalAmount'],
+];
+try {
+    $payments = request_payments($pdo, $id);
+    $paymentSummary = request_payment_summary($pdo, $id, (float) $request['FinalAmount']);
+} catch (PDOException $exception) {
+    error_log('[ServiceManagement] request payments failed: ' . $exception->getMessage());
+}
+
 require __DIR__ . '/../../includes/header.php';
 ?>
 <div class="d-flex flex-wrap gap-2 justify-content-between mb-3">
@@ -110,6 +124,11 @@ require __DIR__ . '/../../includes/header.php';
         <?php if (in_array((string) $request['RequestStatus'], ['Pending', 'Assigned'], true)): ?>
             <a href="<?= e(url('modules/service_assignments/create.php?request_id=' . $id)) ?>" class="btn btn-primary btn-sm">
                 <i class="bi bi-person-check me-1"></i>Assign professional
+            </a>
+        <?php endif; ?>
+        <?php if ((string) $request['RequestStatus'] !== 'Cancelled'): ?>
+            <a href="<?= e(url('modules/payments/create.php?request_id=' . $id . '&customer_id=' . (int) $request['CustomerId'])) ?>" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-credit-card me-1"></i>Record payment
             </a>
         <?php endif; ?>
     </div>
@@ -223,6 +242,62 @@ require __DIR__ . '/../../includes/header.php';
                                         <a class="theme-link theme-link-btn" href="<?= e(url('modules/service_assignments/view.php?id=' . (int) $assignment['uid'])) ?>">
                                             <i class="bi bi-box-arrow-up-right me-1"></i>Open
                                         </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="app-card card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Customer payments</strong>
+                <?php if ((string) $request['RequestStatus'] !== 'Cancelled'): ?>
+                    <a class="theme-link-btn" href="<?= e(url('modules/payments/create.php?request_id=' . $id . '&customer_id=' . (int) $request['CustomerId'])) ?>">
+                        <i class="bi bi-plus-lg me-1"></i>Add
+                    </a>
+                <?php endif; ?>
+            </div>
+            <div class="card-body border-bottom py-3">
+                <div class="row g-2 small">
+                    <div class="col-4">Final <div class="fw-semibold"><?= e(format_money($paymentSummary['final_amount'])) ?></div></div>
+                    <div class="col-4">Paid <div class="fw-semibold"><?= e(format_money($paymentSummary['paid_amount'])) ?></div></div>
+                    <div class="col-4">Balance
+                        <div class="fw-semibold <?= $paymentSummary['balance'] > 0 ? 'text-danger' : 'text-success' ?>">
+                            <?= e(format_money($paymentSummary['balance'])) ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table mb-0 align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Receipt</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th class="text-end">Amount</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php if ($payments === []): ?>
+                            <tr><td colspan="5" class="text-center text-muted py-3">No payments recorded yet.</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($payments as $paymentRow): ?>
+                                <tr>
+                                    <td class="fw-semibold"><?= e((string) $paymentRow['ReceiptNo']) ?></td>
+                                    <td class="text-nowrap"><?= e(format_datetime((string) $paymentRow['PaymentDateTime'])) ?></td>
+                                    <td><?= e((string) $paymentRow['PaymentType']) ?></td>
+                                    <td class="text-end text-nowrap <?= (string) $paymentRow['PaymentType'] === 'Refund' ? 'text-danger' : '' ?>">
+                                        <?= (string) $paymentRow['PaymentType'] === 'Refund' ? '-' : '' ?><?= e(format_money($paymentRow['Amount'])) ?>
+                                    </td>
+                                    <td class="text-end">
+                                        <a class="theme-link theme-link-btn" href="<?= e(url('modules/payments/view.php?id=' . (int) $paymentRow['uid'])) ?>">Open</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
